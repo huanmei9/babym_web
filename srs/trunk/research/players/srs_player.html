@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SRS</title>   
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+    <style>
+        body{
+            padding-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="main_content">
+        <div class="form-inline">
+            <div>
+                URL:
+                <input type="text" id="txt_url" class="input-xxlarge" value="">
+                <button class="btn btn-primary" id="btn_play">播放视频</button>
+                <button class="btn btn-primary" id="btn_send">发送视频</button>
+                <output type="text" id="show_message">2222222</output>
+            </div>
+            <p></p>
+            <div>
+                <video id="video_player" width="100%" autoplay controls></video>
+            </div>
+         
+        </div>
+    </div>
+
+    <div name="detect_flash">
+        <div id="main_flash_alert" class="alert alert-danger fade in hide">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <p>
+                <a href="https://www.adobe.com/products/flashplayer/end-of-life.html" target="_blank">Flash已死</a>，
+                无法播放RTMP流，可用VLC播放器播放。
+            </p>
+            <ul>
+                <li>若希望做低延迟直播（3-5秒），可用HTTP-FLV，播放器用<a href="http://bilibili.github.io/flv.js/demo">flv.js</a>，H5/MSE播放HTTP-FLV</li>
+                <li>若对延迟不敏感（5-10秒），跨平台比较好，可用HLS，播放器用<a href="https://hls-js.netlify.com/demo">hls.js</a>，H5/MSE播放HLS</li>
+                <li>若希望超低延迟（1秒内），只需要支持主流的浏览器，可用WebRTC，播放器用<a href="rtc_player.html">RTC播放器</a></li>
+            </ul>
+            <p>
+                更多信息，参考<a href="https://mp.weixin.qq.com/s/oYn5q4fF9afaged23Ueudg" target="_blank">没有Flash如何做直播？</a>
+            </p>
+        </div>
+    </div>
+
+</div>
+</body>
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/flv-1.5.0.min.js"></script>
+<script type="text/javascript" src="js/hls-0.14.17.min.js"></script>
+<script type="text/javascript" src="js/json2.js"></script>
+<script type="text/javascript" src="js/srs.page.js"></script>
+<script type="text/javascript" src="js/srs.log.js"></script>
+<script type="text/javascript" src="js/srs.utility.js"></script>
+<script type="text/javascript" src="js/winlin.utility.js"></script>
+<script type="text/javascript">
+    var flvPlayer = null;
+    var hlsPlayer = null;
+
+    var send_status = 0;
+    var query = parse_query_string();
+    var send_url = "http://" + query.hostname + ":1985/api/v1/raw?rpc=send";
+    var stop_url = "http://" + query.hostname + ":1985/api/v1/raw?rpc=stop";
+    var query_url = "http://" + query.hostname + ":1985/api/v1/raw?rpc=query";
+    var query_inter = null;
+
+    var stopPlayers = function () {
+        if (flvPlayer) {
+            flvPlayer.destroy();
+            flvPlayer = null;
+        }
+        if (hlsPlayer) {
+            hlsPlayer.destroy();
+            hlsPlayer = null;
+        }
+    };
+
+    var hide_for_error = function () {
+        $('#main_flash_alert').show();
+        $('#main_info').hide();
+        $('#main_tips').hide();
+        $('#video_player').hide();
+        //$('#btn_play').hide();
+
+        stopPlayers();
+    };
+
+    var show_for_ok = function () {
+        $('#main_flash_alert').hide();
+        $('#main_info').show();
+        $('#main_tips').show();
+        $('#video_player').show();
+        //$('#btn_play').show();
+    };
+
+    var apply_url_change = function() {
+        var r = parse_rtmp_url($("#txt_url").val());
+        var url = window.location.protocol + "//" + query.host + query.pathname + "?autostart=true"
+            + "&app=" + r.app + "&stream=" + r.stream + "&server=" + r.server + "&port=" + r.port;
+        url += (query.shp_identify) ? "&shp_identify=" + query.shp_identify : '';
+        url += (r.vhost === "__defaultVhost__") ? "&vhost=" + r.server : "&vhost=" + r.vhost;
+        url += (r.schema !== "rtmp") ? "&schema=" + r.schema : '';
+        url += (query.buffer) ? "&buffer=" + query.buffer : '';
+        url += (query.api_port) ? "&api_port=" + query.api_port : '';
+
+        var queries = user_extra_params(query);
+        queries = user_extra_params(r, queries);
+
+        if (queries && queries.length) {
+            url += '&' + queries.join('&');
+        }
+        $("#player_url").text($("#txt_url").val()).attr("href", url);
+        $("#link_url").attr("href", url);
+
+        // For RTMP, not support.
+        if (r.schema === 'rtmp') {
+            hide_for_error();
+            return;
+        }
+
+        return r;
+    };
+
+    var start_play = function (r) {
+        stopPlayers();
+        if (!r) return;
+
+        // Start play HTTP-FLV.
+        if (r.stream.indexOf('.flv') > 0) {
+            if (!flvjs.isSupported()) {
+                hide_for_error();
+                return;
+            }
+
+            show_for_ok();
+
+            flvPlayer = flvjs.createPlayer({type: 'flv', url: r.url});
+            flvPlayer.attachMediaElement(document.getElementById('video_player'));
+            flvPlayer.load();
+            flvPlayer.play();
+            return;
+        }
+
+        // Start play HLS.
+        if (r.stream.indexOf('.m3u8') > 0) {
+            if (!Hls.isSupported()) {
+                hide_for_error();
+                return;
+            }
+
+            show_for_ok();
+
+            hlsPlayer = new Hls();
+            hlsPlayer.loadSource(r.url);
+            hlsPlayer.attachMedia(document.getElementById('video_player'));
+            return;
+        }
+
+        console.error('不支持的URL', r.url, r);
+        $('#video_player').hide();
+    };
+
+
+    $("#txt_url").change(function(){
+        apply_url_change();
+    });
+
+    $("#btn_play").click(function(){
+        $('#video_player').prop('muted', false);
+        var r = apply_url_change();
+        start_play(r);
+    });
+
+
+    //////////////////////////////////////////////////////////////////
+    $("#btn_send").click(function(){
+        if(send_status == 0) {
+            $.get(send_url, function(data, status){
+                if(status == "success") {
+                    send_status = 1;
+                    $("#btn_send").text('停止发送');
+                    $("#show_message").trigger("custom");
+                }else {
+                    $("show_message").text("服务器无响应，请重试");
+                }
+            });
+        }else {
+            $.get(stop_url, function(data, status){
+                if(status == "success") {
+                    $("#btn_send").text('发送视频');
+                    send_status = 0;    
+                    window.clearInterval(query_inter);
+                }else {
+                    $("show_message").text("停止失败，服务器无响应，请重试");
+                }
+            });
+        }
+    });
+    
+    var query_message = {
+        url : query_url,
+        timeout : 3,
+        type : "GET",
+        async : false,
+        success : function(response) {
+            $("#show_message").text(response['response']);
+        },
+        error : function(response) {
+            
+        }
+    };
+    
+
+    $("#show_message").on("custom", function(){
+        if(send_status == 1) {
+            query_inter = window.setInterval(function(){$.ajax(query_message);}, 1000);
+        }else {
+            $("#show_message").text('stop');
+        }
+        
+    });
+
+    /****
+     * The parameters for this page:
+     *       schema, the protocol schema, rtmp or http.
+     *       server, the ip of the url.
+     *       port, the rtmp port of url.
+     *       vhost, the vhost of url, can equals to server.
+     *       app, the app of url.
+     *       stream, the stream of url, can endwith .flv or .mp4 or nothing for RTMP.
+     *       autostart, whether auto play the stream.
+     *       buffer, the buffer time in seconds.
+     * extra params:
+     *       shp_identify, hls+ param.
+     * for example:
+     *       http://localhost:8088/players/srs_player.html?vhost=ossrs.net&app=live&stream=livestream&server=ossrs.net&port=1935&autostart=true&schema=rtmp
+     *       http://localhost:8088/players/srs_player.html?vhost=ossrs.net&app=live&stream=livestream.flv&server=ossrs.net&port=8080&autostart=true&schema=http
+     */
+    
+
+    // get the vhost and port to set the default url.
+    // url set to: http://localhost:8080/live/livestream.flv
+    srs_init_flv("#txt_url");
+
+    if (query.autostart === "true") {
+        $('#video_player').prop('muted', true);
+        console.warn('For autostart, we should mute it, see https://www.jianshu.com/p/c3c6944eed5a ' +
+            'or https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#audiovideo_elements');
+
+        var r = apply_url_change();
+        start_play(r);
+    } else {
+        $('#video_player').hide();
+    }
+</script>
+</html>
