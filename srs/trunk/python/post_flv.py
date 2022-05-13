@@ -17,7 +17,6 @@ url = "http://120.131.15.222:19971/classify_file"
 wait_file_count = 0
 repost_count = 0
 response_none_count = 0
-response_state = 0
 
 while(True):
     # 
@@ -47,7 +46,7 @@ while(True):
         files=[('file',(str(i)+'.wav',open(file_path + file_list[i].replace('flv', 'wav'),'rb')))]
         headers = {}    
         try:
-            response = requests.request("POST", url, headers=headers, data=payload, files=files, timeout=10)
+            response = requests.request("POST", url, headers=headers, data=payload, files=files, timeout=20)
         except:
             # Some post errors hapended and Repost this file
             i -= 1
@@ -69,18 +68,33 @@ while(True):
         # Get response from post
         os.remove(file_path + file_list[i])
         os.remove(file_path + file_list[i].replace('flv', 'wav'))
+        
         repost_count = 0
         response_none_count = 0
-        # re_data = json.loads(response.text)
-        # re_code = re_data['code']
-        # if(response_state == 0 and re_code == 0):
-        #     continue
-        # response_state = re_code
-        # if(re_code == 0):
-        #     message_write("")
-        # elif(re_code == 1):
-        #     message_write("baby cry!")
-        print(response.text)
+
+        re_data = json.loads(response.text)
+        re_code = re_data['code']
+
+        if(re_code == 0):
+            message_write("algorithm error!")
+        elif(re_code == 1):
+            message_write("")
+        elif(re_code == 2):
+            message_write("hunger")
+        elif(re_code == 3):
+            message_write("pain")
+        elif(re_code == 4):
+            message_write("physiological")
+        elif(re_code == 5):
+            message_write("awake")
+        elif(re_code == 6):
+            message_write("diaper")
+        elif(re_code == 7):
+            message_write("hug")
+        elif(re_code == 8):
+            message_write("sleepy")
+        elif(re_code == 9):
+            message_write("lonely")
 
 
 
