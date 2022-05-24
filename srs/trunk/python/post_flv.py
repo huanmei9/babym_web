@@ -37,7 +37,7 @@ while(True):
     # Transcode flv file to mp3 file
     for i in range(len(file_list)):
         ff = ffmpy.FFmpeg(inputs = {file_path + file_list[i] : '-y'}, 
-                            outputs= {file_path + file_list[i].replace('flv', 'wav') : ['-loglevel', 'quiet']})
+                            outputs= {file_path + file_list[i].replace('flv', 'wav') : ['-loglevel', 'quiet', '-ar', '22050', '-ac',  '1']})
         ff.run()
 
     # Send flv file by POST
