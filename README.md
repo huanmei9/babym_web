@@ -4,8 +4,10 @@
 
 #### python环境：
 
-1. sudo apt-get install pyhon3
-2. pip3 install requests ffmpy
+1. sudo apt update
+2. sudo apt upgrade
+3. sudo apt-get install python3 build-essential gcc make perl dkms
+4. pip3 install requests ffmpy
 
 #### ffmpeg环境：
 
