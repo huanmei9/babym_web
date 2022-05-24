@@ -64,7 +64,7 @@ function build_default_flv_url() {
 
     var schema = (!query.schema)? "http":query.schema;
     var server = (!query.server)? window.location.hostname:query.server;
-    var port = (!query.port)? (schema==="http"? 8080:1935) : Number(query.port);
+    var port = (!query.port)? (schema==="http"? 8081:1935) : Number(query.port);
     var vhost = (!query.vhost)? window.location.hostname:query.vhost;
     var app = (!query.app)? "live":query.app;
     var stream = (!query.stream)? "livestream.flv":query.stream;
