@@ -35,10 +35,10 @@ DELAY_INTERVAL = 5
 delay_flag = False
 last_code = 0
 
-while(True):
-    # Reset result file
-    message_write("")
+# Reset result file
+message_write("")
 
+while(True):
     # Get sorted flv file name
     file_list = [f for f in os.listdir(file_path) if f.endswith('flv')]
     if(not file_list):
@@ -91,7 +91,6 @@ while(True):
 
         re_data = json.loads(response.text)
         re_code = re_data['code']
-        print(re_code)
 
         """
         原代码
@@ -103,24 +102,20 @@ while(True):
         #非cry状态
             if delay_flag == False:#是否需要延时上一状态
                 message_write(message_dict[re_code])
-                print("cur: {} show: {}".format(re_code, re_code))
             else:
                 keep_time = time.time() - delay_cry_ST  # 当前延时时间
                 # 是否处于延时期内
                 if keep_time <= DELAY_INTERVAL:
                     message_write(message_dict[last_code])
-                    print("cur: {} show: {}".format(re_code, last_code))
                 else:
                     delay_flag = False
                     message_write(message_dict[re_code])
-                    print("cur: {} show: {}".format(re_code, re_code))
         else:
         #cry
             delay_flag = True
             delay_cry_ST = time.time()
             message_write(message_dict[re_code])
             last_code = re_code
-            print("cur: {} show: {}".format(re_code, re_code))
 
 
 
