@@ -5,7 +5,7 @@ import ffmpy
 import json
 
 def message_write(message):
-    f = open('./python/result.txt', 'w+')
+    f = open('./python/result.txt', 'w')
     f.write(str(message))
     f.close()
 
@@ -19,10 +19,10 @@ repost_count = 0
 response_none_count = 0
 
 while(True):
-    # 
+    # Reset result file
     message_write("")
 
-    # Get sorted file name
+    # Get sorted flv file name
     file_list = [f for f in os.listdir(file_path) if f.endswith('flv')]
     if(not file_list):
         wait_file_count += 1
@@ -34,13 +34,13 @@ while(True):
     wait_file_count = 0
     file_list = sorted(file_list, key=lambda x: os.path.getmtime(os.path.join(file_path, x)))
 
-    # Transcode flv file to mp3 file
+    # Transcode flv file to wav file
     for i in range(len(file_list)):
         ff = ffmpy.FFmpeg(inputs = {file_path + file_list[i] : '-y'}, 
                             outputs= {file_path + file_list[i].replace('flv', 'wav') : ['-loglevel', 'quiet', '-ar', '22050', '-ac',  '1']})
         ff.run()
 
-    # Send flv file by POST
+    # Send wav file to algorithm by POST
     for i in range(len(file_list)):
         payload={}
         files=[('file',(str(i)+'.wav',open(file_path + file_list[i].replace('flv', 'wav'),'rb')))]
@@ -74,6 +74,7 @@ while(True):
 
         re_data = json.loads(response.text)
         re_code = re_data['code']
+        print(re_code)
 
         if(re_code == 0):
             message_write("algorithm error!")
