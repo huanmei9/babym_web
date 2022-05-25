@@ -131,8 +131,8 @@ app通知的apk文件存放于项目目录下./apk/babyM.apk , 请下载并安�
 ##### 3. 演示界面：
 
 <center class="half">
-    <img src="./imgs/apk1.png" width="250"/>
-    <img src="./imgs/apk2.png" width="250"/>
+    <img src="./imgs/apk1.png" width="200"/>
+    <img src="./imgs/apk2.png" width="200"/>
 </center>
 
 在setting中输入当前请求获取婴儿哭声的服务接口，在第二个界面每隔1s请求婴儿状态并显示。
