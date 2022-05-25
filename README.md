@@ -1,4 +1,4 @@
-## Babym Monitor Demo部署教程
+## Baby Monitor Demo部署教程
 
 演示设备：一台笔记本电脑，一部安卓手机，一台播放哭声的手机设备。笔记本电脑用于推流和转发流，安卓手机用于查看当前演示结果。
 
@@ -131,8 +131,8 @@ app通知的apk文件存放于项目目录下./apk/babyM.apk , 请下载并安�
 ##### 3. 演示界面：
 
 <center class="half">
-    <img src="./imgs/apk1.png" width="200"/>
-    <img src="./imgs/apk2.png" width="200"/>
+    <img src="./imgs/apk1.png" width="250"/>
+    <img src="./imgs/apk2.png" width="250"/>
 </center>
 
 在setting中输入当前请求获取婴儿哭声的服务接口，在第二个界面每隔1s请求婴儿状态并显示。
