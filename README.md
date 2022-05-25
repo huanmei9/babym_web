@@ -109,7 +109,11 @@ deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-proposed main restricted unive
 
 ###  三. 安装效果验证
 
-obs开始推流，PC打开浏览器，输入：http://虚拟机ip:8081/players/srs_player.html?schema=http
+obs开始推流，PC打开浏览器，输入：
+
+```
+http://虚拟机ip:8081/players/srs_player.html?schema=http
+```
 
 如果能正常显示，则部署成功。
 
@@ -134,8 +138,13 @@ app通知的apk文件存放于项目目录下./apk/babyM.apk , 请下载并安�
     <img src="./imgs/apk1.png" width="250"/>
     <img src="./imgs/apk2.png" width="250"/>
 </center>
+在setting中输入当前请求获取婴儿哭声的服务接口：  
 
-在setting中输入当前请求获取婴儿哭声的服务接口：  http://笔记本ip:1985/api/v1/raw?rpc=query，在第二个界面每隔1s请求婴儿状态并显示。
+```
+http://笔记本ip:1985/api/v1/raw?rpc=query
+```
+
+在第二个界面每隔1s请求婴儿状态并显示。
 
 
 
