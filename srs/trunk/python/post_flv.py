@@ -32,6 +32,7 @@ message_dict = {0:"algorithm error!",
 
 delay_cry_ST = 0
 DELAY_INTERVAL = 5
+delay_flag = False
 
 while(True):
     # Reset result file
@@ -91,13 +92,27 @@ while(True):
         re_code = re_data['code']
         print(re_code)
 
+        """
+        原代码
+        （去掉11个if else，用字典message_dict整合为一句）
+        message_write(message_dict[re_code])
+        """
+
         if re_code == 0 or re_code == 1:
-            keep_time = time.time()-delay_cry_ST
-            if keep_time<=DELAY_INTERVAL:
-                pass
-            else:
+        #非cry状态
+            if delay_flag == False:#是否需要延时上一状态
                 message_write(message_dict[re_code])
-        else: #cry
+            else:
+                keep_time = time.time() - delay_cry_ST  # 当前延时时间
+                # 是否处于延时期内
+                if keep_time <= DELAY_INTERVAL:
+                    pass
+                else:
+                    delay_flag = False
+                    message_write(message_dict[re_code])
+        else:
+        #cry
+            delay_flag = True
             delay_cry_ST = time.time()
             message_write(message_dict[re_code])
 
