@@ -3,6 +3,7 @@ from time import sleep
 import requests
 import ffmpy
 import json
+import time
 
 def message_write(message):
     f = open('./python/result.txt', 'w')
@@ -17,6 +18,20 @@ url = "http://120.131.15.222:19971/classify_file"
 wait_file_count = 0
 repost_count = 0
 response_none_count = 0
+
+message_dict = {0:"algorithm error!",
+                1:"",
+                2:"hunger",
+                3:"pain",
+                4:"physiological",
+                5:"awake",
+                6:"diaper",
+                7:"hug",
+                8:"sleepy",
+                9:"lonely"}
+
+delay_cry_ST = 0
+DELAY_INTERVAL = 5
 
 while(True):
     # Reset result file
@@ -76,26 +91,16 @@ while(True):
         re_code = re_data['code']
         print(re_code)
 
-        if(re_code == 0):
-            message_write("algorithm error!")
-        elif(re_code == 1):
-            message_write("")
-        elif(re_code == 2):
-            message_write("hunger")
-        elif(re_code == 3):
-            message_write("pain")
-        elif(re_code == 4):
-            message_write("physiological")
-        elif(re_code == 5):
-            message_write("awake")
-        elif(re_code == 6):
-            message_write("diaper")
-        elif(re_code == 7):
-            message_write("hug")
-        elif(re_code == 8):
-            message_write("sleepy")
-        elif(re_code == 9):
-            message_write("lonely")
+        if re_code == 0 or re_code == 1:
+            keep_time = time.time()-delay_cry_ST
+            if keep_time<=DELAY_INTERVAL:
+                pass
+            else:
+                message_write(message_dict[re_code])
+        else: #cry
+            delay_cry_ST = time.time()
+            message_write(message_dict[re_code])
+
 
 
 
