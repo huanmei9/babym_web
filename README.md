@@ -22,13 +22,13 @@ ubuntu18 iso文件下载链接：https://mirrors.tuna.tsinghua.edu.cn/ubuntu-rel
 >>sudo apt update
 >>sudo apt upgrade
 >>sudo apt-get install python3 build-essential gcc make perl dkms python3-pip net-tools
->>pip install requests ffmpy
+>>pip3 install requests ffmpy
 ```
 
 上述第三步骤如遇到问题可指定源安装：
 
 ```
->>pip install requests ffmpy -i https://pypi.tuna.tsinghua.edu.cn/simple
+>>pip3 install requests ffmpy -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 
